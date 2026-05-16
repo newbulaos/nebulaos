@@ -1,0 +1,35 @@
+{
+  "name": "NebulaOS Dev",
+  "dockerComposeFile": "../../deployments/docker/docker-compose.dev.yml",
+  "service": "backend",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": { "version": "1.23" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "bradlc.vscode-tailwindcss",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "humao.rest-client",
+        "42crunch.vscode-openapi"
+      ],
+      "settings": {
+        "go.toolsManagement.autoUpdate": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[go]": { "editor.defaultFormatter": "golang.go" }
+      }
+    }
+  },
+  "postCreateCommand": "make tools && cd frontend && pnpm install",
+  "remoteUser": "vscode"
+}

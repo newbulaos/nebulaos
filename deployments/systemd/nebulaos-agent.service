@@ -1,0 +1,17 @@
+[Unit]
+Description=NebulaOS Agent (System Metrics)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/nebulaos/bin/agent
+Restart=always
+RestartSec=5
+StandardOutput=journal
+SyslogIdentifier=nebulaos-agent
+Environment=GRPC_PORT=9091
+Environment=METRICS_PORT=9100
+
+[Install]
+WantedBy=multi-user.target

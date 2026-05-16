@@ -1,0 +1,42 @@
+# Binaries
+backend/bin/
+agent/bin/
+
+# Go
+*.exe
+*.test
+*.out
+vendor/
+coverage.out
+
+# Node
+node_modules/
+frontend/.next/
+frontend/out/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Data
+.data/
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+deployments/docker/.env
