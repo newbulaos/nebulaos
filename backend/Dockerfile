@@ -3,7 +3,7 @@ WORKDIR /app
 RUN apk add --no-cache gcc musl-dev sqlite-dev
 
 FROM base AS dev
-RUN go install github.com/air-verse/air@latest
+RUN go install github.com/air-verse/air@v1.61.7
 COPY go.mod go.sum ./
 RUN go mod download
 CMD ["air", "-c", ".air.toml"]
