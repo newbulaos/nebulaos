@@ -48,10 +48,15 @@ fi
 # Install docker compose plugin if missing
 if ! docker compose version &>/dev/null; then
   info "Installing Docker Compose plugin..."
-  apt-get install -y -qq docker-compose-plugin 2>/dev/null || \
-  curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-    -o /usr/local/lib/docker/cli-plugins/docker-compose && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+  COMPOSE_VER="v2.29.1"
+  mkdir -p /usr/local/lib/docker/cli-plugins
+  curl -fsSL "https://github.com/docker/compose/releases/download/${COMPOSE_VER}/docker-compose-$(uname -s)-$(uname -m)" \
+    -o /usr/local/lib/docker/cli-plugins/docker-compose
+  chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+  success "Docker Compose ${COMPOSE_VER}"
 fi
+
+docker compose version &>/dev/null || error "Docker Compose not working. Run: apt-get install docker-compose-plugin"
 
 # Setup directories
 info "Setting up directories..."
