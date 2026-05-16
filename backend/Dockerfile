@@ -1,9 +1,9 @@
-FROM golang:1.24-alpine AS base
+FROM golang:1.25-alpine AS base
 WORKDIR /app
 RUN apk add --no-cache gcc musl-dev sqlite-dev
 
 FROM base AS dev
-RUN go install github.com/air-verse/air@v1.61.7
+RUN go install github.com/air-verse/air@latest
 COPY go.mod go.sum ./
 RUN go mod download
 CMD ["air", "-c", ".air.toml"]
