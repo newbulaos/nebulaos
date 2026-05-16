@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gofiber/websocket/v2"
-	"github.com/nebulaos/nebulaos/backend/pkg/config"
+	"github.com/newbulaos/nebulaos/backend/pkg/config"
 )
 
 type SystemMetrics struct {

@@ -10,8 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
-	"github.com/nebulaos/nebulaos/backend/pkg/config"
-	"github.com/nebulaos/nebulaos/backend/pkg/database"
+	"github.com/newbulaos/nebulaos/backend/pkg/config"
+	"github.com/newbulaos/nebulaos/backend/pkg/database"
 )
 
 var (

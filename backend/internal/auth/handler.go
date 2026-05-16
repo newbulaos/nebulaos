@@ -2,7 +2,7 @@ package auth
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/nebulaos/nebulaos/backend/pkg/middleware"
+	"github.com/newbulaos/nebulaos/backend/pkg/middleware"
 )
 
 type Handler struct {

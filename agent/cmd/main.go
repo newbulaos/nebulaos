@@ -2,57 +2,58 @@ package main
 
 import (
 	"context"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc"
 
-	"github.com/nebulaos/nebulaos/agent/internal/collector"
-	"github.com/nebulaos/nebulaos/agent/internal/metrics"
+	"github.com/newbulaos/nebulaos/agent/internal/collector"
 )
 
 func main() {
 	log := zerolog.New(os.Stdout).With().Timestamp().Logger()
-
-	grpcPort := envOr("GRPC_PORT", "9091")
 	metricsPort := envOr("METRICS_PORT", "9100")
 
-	// Collector
 	col := collector.New()
 	col.Start(context.Background())
 
-	// gRPC server
-	lis, err := net.Listen("tcp", ":"+grpcPort)
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to listen")
-	}
-	grpcServer := grpc.NewServer()
-	metrics.RegisterAgentServer(grpcServer, metrics.NewServer(col))
+	cpuGauge := prometheus.NewGauge(prometheus.GaugeOpts{Name: "node_cpu_usage_percent", Help: "CPU usage percent"})
+	memGauge := prometheus.NewGauge(prometheus.GaugeOpts{Name: "node_memory_used_percent", Help: "Memory used percent"})
+	uptimeGauge := prometheus.NewGauge(prometheus.GaugeOpts{Name: "node_uptime_seconds", Help: "System uptime seconds"})
+	prometheus.MustRegister(cpuGauge, memGauge, uptimeGauge)
 
-	// Prometheus metrics endpoint
-	http.Handle("/metrics", promhttp.Handler())
 	go func() {
-		log.Info().Str("port", metricsPort).Msg("prometheus metrics")
-		_ = http.ListenAndServe(":"+metricsPort, nil)
+		for {
+			if snap := col.Latest(); snap != nil {
+				cpuGauge.Set(snap.CPU.UsagePercent)
+				memGauge.Set(snap.Memory.UsedPercent)
+				uptimeGauge.Set(float64(snap.Uptime))
+			}
+			time.Sleep(2 * time.Second)
+		}
 	}()
 
+	http.Handle("/metrics", promhttp.Handler())
+	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(200) })
+
+	srv := &http.Server{Addr: ":" + metricsPort}
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		log.Info().Str("port", grpcPort).Msg("agent gRPC server")
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatal().Err(err).Msg("gRPC error")
+		log.Info().Str("port", metricsPort).Msg("agent started")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal().Err(err).Msg("server error")
 		}
 	}()
 
 	<-quit
-	grpcServer.GracefulStop()
+	srv.Shutdown(context.Background()) //nolint:errcheck
 }
 
 func envOr(key, def string) string {

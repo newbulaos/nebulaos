@@ -14,7 +14,7 @@ import (
 	dockerclient "github.com/docker/docker/client"
 	"github.com/gofiber/websocket/v2"
 
-	"github.com/nebulaos/nebulaos/backend/pkg/config"
+	"github.com/newbulaos/nebulaos/backend/pkg/config"
 )
 
 type Service struct {

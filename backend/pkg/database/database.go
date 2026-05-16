@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/nebulaos/nebulaos/backend/pkg/config"
+	"github.com/newbulaos/nebulaos/backend/pkg/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

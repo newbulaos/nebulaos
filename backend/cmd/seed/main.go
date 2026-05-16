@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nebulaos/nebulaos/backend/pkg/config"
-	"github.com/nebulaos/nebulaos/backend/pkg/database"
-	"github.com/nebulaos/nebulaos/backend/internal/auth"
+	"github.com/newbulaos/nebulaos/backend/pkg/config"
+	"github.com/newbulaos/nebulaos/backend/pkg/database"
+	"github.com/newbulaos/nebulaos/backend/internal/auth"
 )
 
 func main() {

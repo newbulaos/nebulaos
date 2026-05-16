@@ -5,8 +5,8 @@ import (
 	"runtime"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/nebulaos/nebulaos/backend/pkg/config"
-	"github.com/nebulaos/nebulaos/backend/pkg/middleware"
+	"github.com/newbulaos/nebulaos/backend/pkg/config"
+	"github.com/newbulaos/nebulaos/backend/pkg/middleware"
 )
 
 type Service struct {

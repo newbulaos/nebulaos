@@ -7,14 +7,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nebulaos/nebulaos/backend/internal/auth"
-	"github.com/nebulaos/nebulaos/backend/internal/docker"
-	"github.com/nebulaos/nebulaos/backend/internal/monitoring"
-	"github.com/nebulaos/nebulaos/backend/internal/system"
-	"github.com/nebulaos/nebulaos/backend/pkg/config"
-	"github.com/nebulaos/nebulaos/backend/pkg/database"
-	"github.com/nebulaos/nebulaos/backend/pkg/logger"
-	"github.com/nebulaos/nebulaos/backend/pkg/server"
+	"github.com/newbulaos/nebulaos/backend/internal/auth"
+	"github.com/newbulaos/nebulaos/backend/internal/docker"
+	"github.com/newbulaos/nebulaos/backend/internal/monitoring"
+	"github.com/newbulaos/nebulaos/backend/internal/system"
+	"github.com/newbulaos/nebulaos/backend/pkg/config"
+	"github.com/newbulaos/nebulaos/backend/pkg/database"
+	"github.com/newbulaos/nebulaos/backend/pkg/logger"
+	"github.com/newbulaos/nebulaos/backend/pkg/server"
 )
 
 // @title NebulaOS API
