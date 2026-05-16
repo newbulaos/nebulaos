@@ -1,6 +1,6 @@
 module github.com/newbulaos/nebulaos/backend
 
-go 1.25.0
+go 1.23
 
 require (
 	github.com/docker/docker v27.0.3+incompatible
