@@ -4,7 +4,7 @@ RUN corepack enable pnpm
 
 FROM base AS dev
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
+RUN pnpm install --ignore-scripts && pnpm rebuild esbuild sharp 2>/dev/null || true
 CMD ["pnpm", "dev"]
 
 FROM base AS builder
