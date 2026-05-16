@@ -4,7 +4,7 @@ services:
   backend:
     image: ghcr.io/newbulaos/nebulaos-backend:latest
     build:
-      context: ./backend
+      context: ${NEBULAOS_SRC:-./backend}
       target: production
     ports:
       - "${BACKEND_PORT:-8080}:8080"

@@ -62,9 +62,17 @@ docker compose version &>/dev/null || error "Docker Compose not working. Run: ap
 info "Setting up directories..."
 mkdir -p "${INSTALL_DIR}" "${DATA_DIR}"
 
-# Download docker-compose.yml
-info "Downloading docker-compose.yml..."
-curl -fsSL "${COMPOSE_URL}" -o "${INSTALL_DIR}/docker-compose.yml"
+# Download source and compose
+info "Downloading NebulaOS..."
+if command -v git &>/dev/null && git ls-remote "https://github.com/${REPO}.git" &>/dev/null 2>&1; then
+  git clone --depth=1 "https://github.com/${REPO}.git" "${INSTALL_DIR}/src" 2>/dev/null || \
+    git -C "${INSTALL_DIR}/src" pull 2>/dev/null
+  cp "${INSTALL_DIR}/src/docker-compose.yml" "${INSTALL_DIR}/docker-compose.yml"
+  # Use dev compose which builds from source
+  cp "${INSTALL_DIR}/src/docker-compose.dev.yml" "${INSTALL_DIR}/docker-compose.build.yml"
+else
+  curl -fsSL "${COMPOSE_URL}" -o "${INSTALL_DIR}/docker-compose.yml"
+fi
 
 # Generate .env if not exists
 if [[ ! -f "${INSTALL_DIR}/.env" ]]; then
@@ -79,17 +87,14 @@ NEXT_PUBLIC_API_URL=http://${SERVER_IP}:8080
 NEXT_PUBLIC_WS_URL=ws://${SERVER_IP}:8080
 CORS_ORIGINS=http://${SERVER_IP}:3000
 EOF
-  chmod 600 "${INSTALL_DIR}/.env"
+  chmod 644 "${INSTALL_DIR}/.env"
   success "Config generated"
 fi
 
-# Pull and start
-info "Pulling images (this may take a few minutes)..."
-cd "${INSTALL_DIR}"
-docker compose pull
-
-info "Starting NebulaOS..."
-docker compose up -d
+# Build and start from source
+cd "${INSTALL_DIR}/src"
+info "Building and starting NebulaOS (first run takes ~5 minutes)..."
+docker compose up -d --build
 
 # Install systemd service for auto-start on boot
 cat > /etc/systemd/system/nebulaos.service <<EOF
@@ -101,7 +106,7 @@ Requires=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=${INSTALL_DIR}
+WorkingDirectory=${INSTALL_DIR}/src
 ExecStart=docker compose up -d
 ExecStop=docker compose down
 TimeoutStartSec=300
