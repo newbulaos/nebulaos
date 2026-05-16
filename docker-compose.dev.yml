@@ -1,0 +1,81 @@
+name: nebulaos-dev
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - nebulaos_data:/data
+    environment:
+      ENV: development
+      DB_DRIVER: sqlite
+      DB_PATH: /data/nebulaos.db
+      JWT_SECRET: dev-secret-change-in-prod
+      JWT_EXPIRY: "24"
+      JWT_REFRESH_EXPIRY: "30"
+      REDIS_URL: redis://redis:6379
+      AGENT_GRPC_ADDR: agent:9091
+      CORS_ORIGINS: http://localhost:3000
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_WS_URL: ws://localhost:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  agent:
+    build:
+      context: ./agent
+    expose:
+      - "9091"
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      GRPC_PORT: "9091"
+      METRICS_PORT: "9100"
+      HOST_PROC: /host/proc
+      HOST_SYS: /host/sys
+    privileged: true
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  nebulaos_data:
+  redis_data:

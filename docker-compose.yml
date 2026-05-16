@@ -1,0 +1,84 @@
+name: nebulaos
+
+services:
+  backend:
+    image: ghcr.io/newbulaos/nebulaos-backend:latest
+    build:
+      context: ./backend
+      target: production
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    volumes:
+      - nebulaos_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      ENV: production
+      DB_DRIVER: sqlite
+      DB_PATH: /data/nebulaos.db
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_EXPIRY: ${JWT_EXPIRY:-24}
+      JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-30}
+      REDIS_URL: redis://redis:6379
+      AGENT_GRPC_ADDR: agent:9091
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    image: ghcr.io/newbulaos/nebulaos-frontend:latest
+    build:
+      context: ./frontend
+      target: production
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8080}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  agent:
+    image: ghcr.io/newbulaos/nebulaos-agent:latest
+    build:
+      context: ./agent
+    expose:
+      - "9091"
+      - "9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      GRPC_PORT: "9091"
+      METRICS_PORT: "9100"
+      HOST_PROC: /host/proc
+      HOST_SYS: /host/sys
+    privileged: true
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  nebulaos_data:
+  redis_data:

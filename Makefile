@@ -5,7 +5,7 @@ BINARY_NAME=nebulaos
 BACKEND_DIR=./backend
 FRONTEND_DIR=./frontend
 AGENT_DIR=./agent
-DOCKER_COMPOSE=docker compose -f deployments/docker/docker-compose.dev.yml
+DOCKER_COMPOSE=docker compose -f docker-compose.dev.yml
 
 all: build
 
