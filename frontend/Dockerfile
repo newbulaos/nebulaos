@@ -9,7 +9,9 @@ CMD ["pnpm", "dev"]
 
 FROM base AS builder
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm approve-builds --yes 2>/dev/null || true
+RUN pnpm rebuild esbuild sharp 2>/dev/null || true
 COPY . .
 RUN pnpm build
 
