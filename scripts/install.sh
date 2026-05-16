@@ -208,22 +208,26 @@ Setup_Directories() {
 }
 
 Download_Files() {
-    Show 2 "Downloading NebulaOS..."
+    Show 2 "Cloning NebulaOS source..."
     GreyStart
-    ${sudo_cmd} curl -fsSL "${RAW_BASE}/docker-compose.yml" -o "${INSTALL_DIR}/docker-compose.yml"
+    if [[ -d "${INSTALL_DIR}/src/.git" ]]; then
+        git -C "${INSTALL_DIR}/src" pull --quiet
+    else
+        ${sudo_cmd} git clone --depth=1 "https://github.com/${REPO}.git" "${INSTALL_DIR}/src"
+    fi
     ColorReset
-    Show 0 "docker-compose.yml downloaded."
+    Show 0 "Source downloaded."
 }
 
 Generate_Config() {
-    if [[ -f "${INSTALL_DIR}/.env" ]]; then
+    if [[ -f "${INSTALL_DIR}/src/.env" ]]; then
         Show 3 "Config already exists, skipping generation."
         return
     fi
     Show 2 "Generating configuration..."
     JWT_SECRET=$(openssl rand -hex 32)
     SERVER_IP=$(hostname -I | awk '{print $1}')
-    ${sudo_cmd} tee "${INSTALL_DIR}/.env" >/dev/null <<EOF
+    ${sudo_cmd} tee "${INSTALL_DIR}/src/.env" >/dev/null <<EOF
 JWT_SECRET=${JWT_SECRET}
 BACKEND_PORT=8080
 FRONTEND_PORT=3000
@@ -231,15 +235,15 @@ NEXT_PUBLIC_API_URL=http://${SERVER_IP}:8080
 NEXT_PUBLIC_WS_URL=ws://${SERVER_IP}:8080
 CORS_ORIGINS=http://${SERVER_IP}:3000
 EOF
-    ${sudo_cmd} chmod 644 "${INSTALL_DIR}/.env"
+    ${sudo_cmd} chmod 644 "${INSTALL_DIR}/src/.env"
     Show 0 "Config generated."
 }
 
 Start_Services() {
     Show 2 "Starting NebulaOS (building images, this may take a few minutes)..."
-    cd "${INSTALL_DIR}"
+    cd "${INSTALL_DIR}/src"
     GreyStart
-    ${sudo_cmd} docker compose up -d --build
+    ${sudo_cmd} docker compose -f docker-compose.dev.yml up -d --build
     ColorReset
     Show 0 "Services started."
 }
@@ -255,9 +259,9 @@ Requires=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=${INSTALL_DIR}
-ExecStart=docker compose up -d
-ExecStop=docker compose down
+WorkingDirectory=${INSTALL_DIR}/src
+ExecStart=docker compose -f docker-compose.dev.yml up -d
+ExecStop=docker compose -f docker-compose.dev.yml down
 TimeoutStartSec=300
 
 [Install]

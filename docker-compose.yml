@@ -3,9 +3,6 @@ name: nebulaos
 services:
   backend:
     image: ghcr.io/newbulaos/nebulaos-backend:latest
-    build:
-      context: ${NEBULAOS_SRC:-./backend}
-      target: production
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     volumes:
@@ -19,7 +16,6 @@ services:
       JWT_EXPIRY: ${JWT_EXPIRY:-24}
       JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-30}
       REDIS_URL: redis://redis:6379
-      AGENT_GRPC_ADDR: agent:9091
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     depends_on:
       redis:
@@ -33,9 +29,6 @@ services:
 
   frontend:
     image: ghcr.io/newbulaos/nebulaos-frontend:latest
-    build:
-      context: ./frontend
-      target: production
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
@@ -48,8 +41,6 @@ services:
 
   agent:
     image: ghcr.io/newbulaos/nebulaos-agent:latest
-    build:
-      context: ./agent
     expose:
       - "9091"
       - "9100"
@@ -58,7 +49,6 @@ services:
       - /sys:/host/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      GRPC_PORT: "9091"
       METRICS_PORT: "9100"
       HOST_PROC: /host/proc
       HOST_SYS: /host/sys
